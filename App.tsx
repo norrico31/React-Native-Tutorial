@@ -80,16 +80,16 @@ const Section: React.FC<
 const App = () => {
 	const isDarkMode = useColorScheme() === 'dark';
 	const [text, onChangeText] = useState('');
-	const [modalVisible, setModalVisible] = useState(false);
+	// const [modalVisible, setModalVisible] = useState(false);
 	const [items, setItems] = useState(initState);
 	const [selectedUser, setSelectedUser] = useState<SelectedUser>(undefined);
 	const backgroundStyle = {
 		backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
 	};
 
-
 	function editUser(user: SelectedUser) {
 		onChangeText(user!.name);
+		setSelectedUser(user);
 	}
 
 	function deleteUser(id: string) {
@@ -99,7 +99,7 @@ const App = () => {
 	}
 
 	function closeModal() {
-		setModalVisible(false);
+		// setModalVisible(false);
 		setSelectedUser(undefined);
 	}
 
@@ -118,12 +118,14 @@ const App = () => {
 		);
 	};
 
+	console.log(selectedUser);
 
 	function onSubmit(evt: React.FormEvent) {
 		evt.preventDefault();
-		if (selectedUser !== undefined) {
-			const existingUser = items.map((itm) => itm.id !== selectedUser.id ? itm : { ...itm, name: text });
+		if (selectedUser) {
+			const existingUser = items.map((itm) => itm.id !== selectedUser.id ? itm : { ...selectedUser, name: text });
 			setItems(existingUser);
+			setSelectedUser(undefined);
 		} else {
 			setItems([...items, { name: text, id: uuidV4.v4().toString() }]);
 		}
