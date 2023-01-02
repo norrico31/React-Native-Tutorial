@@ -26,7 +26,6 @@ import {
 } from 'react-native';
 import { Colors, Header } from 'react-native/Libraries/NewAppScreen';
 import uuidV4 from 'react-native-uuid';
-import Modal from './src/shared/components/Modal';
 
 const initState = [
 	{
@@ -88,16 +87,15 @@ const App = () => {
 		backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
 	};
 
-	function onSubmit(evt: React.FormEvent) {
-		evt.preventDefault();
-		// Do something when adding items
-		setItems([...items, { name: text, id: uuidV4.v4().toString() }]);
-		onChangeText('');
+
+	function editUser(user: SelectedUser) {
+		onChangeText(user!.name);
 	}
 
-	function deleteItem(id: string) {
+	function deleteUser(id: string) {
 		const filteredItms = items.filter((itm) => itm.id !== id);
 		setItems(filteredItms);
+		setSelectedUser(undefined);
 	}
 
 	function closeModal() {
@@ -105,19 +103,32 @@ const App = () => {
 		setSelectedUser(undefined);
 	}
 
-	const createTwoButtonAlert = (user: SelectedUser) =>
+	const btnAlertDelete = (user: SelectedUser) => {
 		Alert.alert(
-			`Delete`,
+			'Delete',
 			`wanna delete user ${user?.name}?`,
 			[
 				{
-					text: "Cancel",
-					onPress: () => console.log("Cancel Pressed"),
-					style: "cancel"
+					text: 'Cancel',
+					onPress: () => console.log('Cancel Pressed'),
+					style: 'cancel',
 				},
-				{ text: "Delete", onPress: () => deleteItem(user!.id) }
+				{ text: 'Delete', onPress: () => deleteUser(user!.id) },
 			]
 		);
+	};
+
+
+	function onSubmit(evt: React.FormEvent) {
+		evt.preventDefault();
+		if (selectedUser !== undefined) {
+			const existingUser = items.map((itm) => itm.id !== selectedUser.id ? itm : { ...itm, name: text });
+			setItems(existingUser);
+		} else {
+			setItems([...items, { name: text, id: uuidV4.v4().toString() }]);
+		}
+		onChangeText('');
+	}
 
 	return (
 		<SafeAreaView style={backgroundStyle}>
@@ -130,6 +141,7 @@ const App = () => {
 				style={backgroundStyle}>
 				<Header />
 				<View
+					// eslint-disable-next-line react-native/no-inline-styles
 					style={{
 						backgroundColor: isDarkMode ? Colors.black : Colors.white,
 						paddingVertical: 20,
@@ -147,13 +159,13 @@ const App = () => {
 						<View key={itm.id} style={{ flexDirection: 'row', alignItems: 'center', width: '100%', justifyContent: 'space-evenly', marginVertical: 10 }}>
 							<Text style={styles.name}>{itm.name}</Text>
 							<View style={{ flexDirection: 'row', justifyContent: 'space-evenly', width: 150, alignItems: 'center' }}>
-								<Text>Edit</Text>
-								<Button title="Delete" onPress={() => createTwoButtonAlert(itm)} />
+								<Button title="Edit" onPress={() => editUser(itm)} />
+								<Button title="Delete" onPress={() => btnAlertDelete(itm)} />
 							</View>
 						</View>
 					))}
 				</View>
-				{/* <Modal isModal={modalVisible} closeModal={closeModal} selectedUser={selectedUser} deleteUser={deleteItem} /> */}
+				{/* <Modal isModal={modalVisible} closeModal={closeModal} selectedUser={selectedUser} deleteUser={deleteUser} /> */}
 			</ScrollView>
 		</SafeAreaView>
 	);
