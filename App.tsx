@@ -12,6 +12,9 @@
 
 import React, { useState, type PropsWithChildren } from 'react';
 import {
+	Alert,
+	Button,
+	Pressable,
 	SafeAreaView,
 	ScrollView,
 	StatusBar,
@@ -23,6 +26,7 @@ import {
 } from 'react-native';
 import { Colors, Header } from 'react-native/Libraries/NewAppScreen';
 import uuidV4 from 'react-native-uuid';
+import Modal from './src/shared/components/Modal';
 
 const initState = [
 	{
@@ -38,6 +42,11 @@ const initState = [
 		name: 'makima',
 	},
 ];
+
+export type SelectedUser = {
+	id: string
+	name: string
+} | undefined
 
 const Section: React.FC<
 	PropsWithChildren<{
@@ -72,7 +81,9 @@ const Section: React.FC<
 const App = () => {
 	const isDarkMode = useColorScheme() === 'dark';
 	const [text, onChangeText] = useState('');
+	const [modalVisible, setModalVisible] = useState(false);
 	const [items, setItems] = useState(initState);
+	const [selectedUser, setSelectedUser] = useState<SelectedUser>(undefined);
 	const backgroundStyle = {
 		backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
 	};
@@ -83,6 +94,30 @@ const App = () => {
 		setItems([...items, { name: text, id: uuidV4.v4().toString() }]);
 		onChangeText('');
 	}
+
+	function deleteItem(id: string) {
+		const filteredItms = items.filter((itm) => itm.id !== id);
+		setItems(filteredItms);
+	}
+
+	function closeModal() {
+		setModalVisible(false);
+		setSelectedUser(undefined);
+	}
+
+	const createTwoButtonAlert = (user: SelectedUser) =>
+		Alert.alert(
+			`Delete`,
+			`wanna delete user ${user?.name}?`,
+			[
+				{
+					text: "Cancel",
+					onPress: () => console.log("Cancel Pressed"),
+					style: "cancel"
+				},
+				{ text: "Delete", onPress: () => deleteItem(user!.id) }
+			]
+		);
 
 	return (
 		<SafeAreaView style={backgroundStyle}>
@@ -109,16 +144,16 @@ const App = () => {
 						value={text}
 					/>
 					{items.map((itm: { id: string; name: string }) => (
-						<View key={itm.id} style={{ flexDirection: 'row', alignItems: 'center', width: '100%', justifyContent: 'space-evenly' }}>
+						<View key={itm.id} style={{ flexDirection: 'row', alignItems: 'center', width: '100%', justifyContent: 'space-evenly', marginVertical: 10 }}>
 							<Text style={styles.name}>{itm.name}</Text>
-							<View style={{ flexDirection: 'row', justifyContent: 'space-evenly', width: 100 }}>
+							<View style={{ flexDirection: 'row', justifyContent: 'space-evenly', width: 150, alignItems: 'center' }}>
 								<Text>Edit</Text>
-								<Text>X</Text>
+								<Button title="Delete" onPress={() => createTwoButtonAlert(itm)} />
 							</View>
 						</View>
 					))}
 				</View>
-
+				{/* <Modal isModal={modalVisible} closeModal={closeModal} selectedUser={selectedUser} deleteUser={deleteItem} /> */}
 			</ScrollView>
 		</SafeAreaView>
 	);
@@ -151,6 +186,19 @@ const styles = StyleSheet.create({
 		paddingHorizontal: 24,
 		fontSize: 24,
 		fontWeight: '700',
+	},
+	button: {
+		borderRadius: 20,
+		padding: 10,
+		elevation: 2,
+	},
+	buttonOpen: {
+		backgroundColor: "#F194FF",
+	},
+	textStyle: {
+		color: "white",
+		fontWeight: "bold",
+		textAlign: "center",
 	},
 });
 
