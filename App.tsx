@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable prettier/prettier */
 /**
  * Sample React Native App
@@ -9,7 +10,7 @@
  * @format
  */
 
-import React, { type PropsWithChildren } from 'react';
+import React, { useState, type PropsWithChildren } from 'react';
 import {
 	SafeAreaView,
 	ScrollView,
@@ -20,15 +21,27 @@ import {
 	useColorScheme,
 	View,
 } from 'react-native';
+import { Colors, Header } from 'react-native/Libraries/NewAppScreen';
+import uuidV4 from 'react-native-uuid';
 
-import {
-	Colors,
-	Header,
-} from 'react-native/Libraries/NewAppScreen';
+const initState = [
+	{
+		id: '1',
+		name: 'gerald',
+	},
+	{
+		id: '2',
+		name: 'norrico',
+	},
+	{
+		id: '3',
+		name: 'makima',
+	},
+];
 
 const Section: React.FC<
 	PropsWithChildren<{
-		title: string
+		title: string;
 	}>
 > = ({ children, title }) => {
 	const isDarkMode = useColorScheme() === 'dark';
@@ -58,10 +71,18 @@ const Section: React.FC<
 
 const App = () => {
 	const isDarkMode = useColorScheme() === 'dark';
-	const [text, onChangeText] = React.useState('');
+	const [text, onChangeText] = useState('');
+	const [items, setItems] = useState(initState);
 	const backgroundStyle = {
 		backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
 	};
+
+	function onSubmit(evt: React.FormEvent) {
+		evt.preventDefault();
+		// Do something when adding items
+		setItems([...items, { name: text, id: uuidV4.v4().toString() }]);
+		onChangeText('');
+	}
 
 	return (
 		<SafeAreaView style={backgroundStyle}>
@@ -76,17 +97,28 @@ const App = () => {
 				<View
 					style={{
 						backgroundColor: isDarkMode ? Colors.black : Colors.white,
+						paddingVertical: 20,
 					}}>
 					<Section title="Android TypeScript!">
 						<Text style={styles.highlight}>Hello World</Text>
 					</Section>
-
 					<TextInput
 						style={styles.input}
 						onChangeText={onChangeText}
+						onSubmitEditing={onSubmit}
 						value={text}
 					/>
+					{items.map((itm: { id: string; name: string }) => (
+						<View key={itm.id} style={{ flexDirection: 'row', alignItems: 'center', width: '100%', justifyContent: 'space-evenly' }}>
+							<Text style={styles.name}>{itm.name}</Text>
+							<View style={{ flexDirection: 'row', justifyContent: 'space-evenly', width: 100 }}>
+								<Text>Edit</Text>
+								<Text>X</Text>
+							</View>
+						</View>
+					))}
 				</View>
+
 			</ScrollView>
 		</SafeAreaView>
 	);
@@ -107,13 +139,18 @@ const styles = StyleSheet.create({
 		fontWeight: '400',
 	},
 	highlight: {
-		fontWeight: '700',
+		paddingHorizontal: 24,
 	},
 	input: {
 		height: 40,
 		margin: 12,
 		borderWidth: 1,
 		padding: 10,
+	},
+	name: {
+		paddingHorizontal: 24,
+		fontSize: 24,
+		fontWeight: '700',
 	},
 });
 
